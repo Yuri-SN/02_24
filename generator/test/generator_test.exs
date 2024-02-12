@@ -1,45 +1,43 @@
 defmodule GeneratorTest do
   use ExUnit.Case
 
-  test "generate random string with default length" do
-    {result, response} = Generator.string()
+  describe "tests with valid input data" do
+    test "generate random string with default length" do
+      random_string = Generator.string()
 
-    assert result == :ok
-    assert String.length(response) == 6
+      assert String.length(random_string) == 6
+    end
+
+    test "generate random string with 10 chars" do
+      random_string = Generator.string(10)
+
+      assert String.length(random_string) == 10
+    end
   end
 
-  test "generate random string with 10 chars" do
-    {result, response} = Generator.string(10)
+  describe "tests with invalid input data" do
+    test "try generate random string with 0 as length param" do
+      assert_raise FunctionClauseError, fn ->
+        Generator.string(0)
+      end
+    end
 
-    assert result == :ok
-    assert String.length(response) == 10
-  end
+    test "try generate random string with -12 as length param" do
+      assert_raise FunctionClauseError, fn ->
+        Generator.string(-12)
+      end
+    end
 
-  test "try generate random string with 0 as length param" do
-    {result, response} = Generator.string(0)
+    test "try to generate random string with string as length param" do
+      assert_raise FunctionClauseError, fn ->
+        Generator.string("20")
+      end
+    end
 
-    assert result == :error
-    assert response == "parameter must be positive integer"
-  end
-
-  test "try generate random string with -12 as length param" do
-    {result, response} = Generator.string(-12)
-
-    assert result == :error
-    assert response == "parameter must be positive integer"
-  end
-
-  test "try to generate random string with string as length param" do
-    {result, response} = Generator.string("20")
-
-    assert result == :error
-    assert response == "parameter must be positive integer"
-  end
-
-  test "try to generate random string with float as length param" do
-    {result, response} = Generator.string(2.1)
-
-    assert result == :error
-    assert response == "parameter must be positive integer"
+    test "try to generate random string with float as length param" do
+      assert_raise FunctionClauseError, fn ->
+        Generator.string(2.1)
+      end
+    end
   end
 end

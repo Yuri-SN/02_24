@@ -3,43 +3,13 @@ defmodule CalculatorTest do
 
   doctest Calculator
 
-  describe "test add function" do
-    test "try to add with incorrect first param" do
-      assert Calculator.add("1", 2) == "error: incorrect input data"
+  describe "test chains" do
+    test "add - divide" do
+      assert 5 |> Calculator.add(3) |> Calculator.divide(2) == 4.0
     end
 
-    test "try to add with incorrect second param" do
-      assert Calculator.add(3, "4") == "error: incorrect input data"
-    end
-  end
-
-  describe "test subtract function" do
-    test "try to add with incorrect first param" do
-      assert Calculator.subtract("10", 25) == "error: incorrect input data"
-    end
-
-    test "try to add with incorrect second param" do
-      assert Calculator.subtract(39, "42") == "error: incorrect input data"
-    end
-  end
-
-  describe "test multiply function" do
-    test "try to add with incorrect first param" do
-      assert Calculator.multiply("12", 22) == "error: incorrect input data"
-    end
-
-    test "try to add with incorrect second param" do
-      assert Calculator.multiply(3, "4") == "error: incorrect input data"
-    end
-  end
-
-  describe "test divide function" do
-    test "try to add with incorrect first param" do
-      assert Calculator.divide("122", 2) == "error: incorrect input data"
-    end
-
-    test "try to add with incorrect second param" do
-      assert Calculator.divide(9, "3") == "error: incorrect input data"
+    test "subtract - multiply" do
+      assert 3 |> Calculator.subtract(4) |> Calculator.multiply(2) == -2
     end
   end
 end

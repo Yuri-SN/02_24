@@ -10,14 +10,12 @@ defmodule Calculator do
     16
     iex> Calculator.add(700, 95)
     795
+    iex> Calculator.add("foo", :bar)
+    ** (FunctionClauseError) no function clause matching in Calculator.add/2
   """
   @spec add(number(), number()) :: number()
   def add(a, b) when is_number(a) and is_number(b) do
     a + b
-  end
-
-  def add(_a, _b) do
-    "error: incorrect input data"
   end
 
   @doc """
@@ -27,14 +25,12 @@ defmodule Calculator do
     -2
     iex> Calculator.subtract(700, 78)
     622
+    iex> Calculator.subtract("foo", :bar)
+    ** (FunctionClauseError) no function clause matching in Calculator.subtract/2
   """
   @spec subtract(number(), number()) :: number()
   def subtract(a, b) when is_number(a) and is_number(b) do
     a - b
-  end
-
-  def subtract(_a, _b) do
-    "error: incorrect input data"
   end
 
   @doc """
@@ -44,14 +40,12 @@ defmodule Calculator do
     63
     iex> Calculator.multiply(100, 78)
     7800
+    iex> Calculator.multiply("foo", :bar)
+    ** (FunctionClauseError) no function clause matching in Calculator.multiply/2
   """
   @spec multiply(number(), number()) :: number()
   def multiply(a, b) when is_number(a) and is_number(b) do
     a * b
-  end
-
-  def multiply(_a, _b) do
-    "error: incorrect input data"
   end
 
   @doc """
@@ -63,13 +57,11 @@ defmodule Calculator do
     0.42857142857142855
     iex> Calculator.divide(100, 9)
     11.11111111111111
+    iex> Calculator.divide("foo", :bar)
+    ** (FunctionClauseError) no function clause matching in Calculator.divide/2
   """
   @spec divide(number(), number()) :: float()
   def divide(a, b) when is_number(a) and is_number(b) do
     a / b
-  end
-
-  def divide(_a, _b) do
-    "error: incorrect input data"
   end
 end
