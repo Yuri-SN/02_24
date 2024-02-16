@@ -5,7 +5,7 @@
 ```elixir
 iex --sname node1@localhost -S mix
 
-{:ok, p} = Processes.Echo.start_link()
+{:ok, pid} = Processes.Echo.start_link()
 ```
 
 ## Node 2
