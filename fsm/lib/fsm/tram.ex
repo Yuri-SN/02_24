@@ -6,7 +6,6 @@ defmodule Fsm.Tram do
   - :idle - в депо
   - :moving - движение по маршруту
   - :stopped - стоит на остановке
-  - :at_depot - следует в депо
   """
 
   use GenServer
@@ -23,6 +22,8 @@ defmodule Fsm.Tram do
     GenServer.start_link(__MODULE__, %{@initial_state | tram_num: tram_num}, name: __MODULE__)
   end
 
+  def max_passengers, do: @max_passengers
+
   @doc """
   Посылает трамваю команду
 
@@ -30,14 +31,13 @@ defmodule Fsm.Tram do
   - :start - начало движения
   - :stop - остановиться
   - :change_passengers - погрузка / выгрузка пассажиров
-  - :empty_tram - выгрузить всех пассажиров
-  - :at_depot - движение в депо
+  - :to_depot - движение в депо
   """
   def send_command(command) do
     GenServer.call(__MODULE__, {:command, command})
   end
 
-  def status(), do: GenServer.call(__MODULE__, {:status})
+  def status, do: GenServer.call(__MODULE__, :status)
 
   # callbacks
 
@@ -55,82 +55,60 @@ defmodule Fsm.Tram do
   end
 
   @impl true
-  def handle_call({:status}, _from, state) do
+  def handle_call(:status, _from, state) do
     {:reply, state, state}
   end
 
   # internal functions
 
-  defp handle_command(command, state) do
-    case state.status do
-      :idle ->
-        handle_idle_state(command, state)
+  # from :idle
+  defp handle_command(:start, %{status: :idle} = state),
+    do: {%{state | status: :moving}, "tram #{state.tram_num} started moving"}
 
-      :stopped ->
-        handle_stopped_state(command, state)
+  defp handle_command(:to_depot, %{status: :idle} = state),
+    do: {state, "already in depot"}
 
-      :moving ->
-        handle_moving_state(command, state)
-    end
-  end
+  defp handle_command({:change_passengers, _num}, %{status: :idle} = state),
+    do: {state, "can't change passengers: tram in depot"}
 
-  defp handle_idle_state(command, state) do
-    case command do
-      :start ->
-        {%{state | status: :moving}, "tram #{state.tram_num} started moving"}
+  defp handle_command(:stop, %{status: :idle} = state),
+    do: {state, "can't stop: tram in depot"}
 
-      :at_depot ->
-        {state, "already in depot"}
+  # from :moving
+  defp handle_command(:stop, %{status: :moving} = state),
+    do: {%{state | status: :stopped, doors_opened: true}, "tram #{state.tram_num} stopped"}
 
-      :change_passengers ->
-        {state, "can't change passengers: tram in depot"}
+  defp handle_command(:start, %{status: :moving} = state),
+    do: {state, "tram #{state.tram_num} already moving"}
 
-      :stop ->
-        {state, "can't stop: tram in depot"}
+  defp handle_command({:change_passengers, _num}, %{status: :moving} = state),
+    do: {state, "can't change passengers: tram moving"}
 
-      _ ->
-        {state, "command not allowed"}
-    end
-  end
+  defp handle_command(:empty_tram, %{status: :moving} = state),
+    do: {state, "can't empty tram: tram is moving"}
 
-  defp handle_stopped_state(command, state) do
-    case command do
-      :start ->
-        {%{state | status: :moving, doors_opened: false}, "tram #{state.tram_num} started moving"}
+  defp handle_command(:to_depot, %{status: :moving} = state),
+    do: {state, "can't move to depot: on route"}
 
-      :stop ->
-        {state, "tram #{state.tram_num} already stopped"}
+  # from :stopped
+  defp handle_command(:start, %{status: :stopped} = state),
+    do: {%{state | status: :moving, doors_opened: false}, "tram #{state.tram_num} started moving"}
 
-      :change_passengers ->
-        {%{state | passengers: Enum.random(1..@max_passengers)}, "passengers changed"}
+  defp handle_command(:stop, %{status: :stopped} = state),
+    do: {state, "tram #{state.tram_num} already stopped"}
 
-      :empty_tram ->
-        {%{state | passengers: 0}, "tram is empty"}
+  defp handle_command({:change_passengers, num}, %{status: :stopped} = state),
+    do: {%{state | passengers: num}, "passengers changed"}
 
-      :at_depot ->
-        {%{state | status: :idle, doors_opened: false}, "moving to depot"}
+  defp handle_command(:empty_tram, %{status: :stopped} = state),
+    do: {%{state | passengers: 0}, "tram is empty"}
 
-      _ ->
-        {state, "command not allowed"}
-    end
-  end
+  defp handle_command(:to_depot, %{status: :stopped} = state) when state.passengers == 0,
+    do: {%{state | status: :idle, doors_opened: false}, "moving to depot and stop"}
 
-  defp handle_moving_state(command, state) do
-    case command do
-      :stop ->
-        {%{state | status: :stopped, doors_opened: true}, "tram #{state.tram_num} stopped"}
+  defp handle_command(:to_depot, %{status: :stopped} = state) when state.passengers > 0,
+    do: {state, "can't move to depot: tram is not empty"}
 
-      :start ->
-        {state, "tram #{state.tram_num} already moving"}
-
-      :change_passengers ->
-        {state, "can't change passengers: tram moving"}
-
-      :empty_tram ->
-        {state, "can't empty tram: tram is moving"}
-
-      _ ->
-        {state, "command not allowed"}
-    end
-  end
+  # any other variants
+  defp handle_command(_, state), do: {state, "command not allowed"}
 end

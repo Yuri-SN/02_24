@@ -1,7 +1,9 @@
 defmodule Fsm.TramTest do
   use ExUnit.Case
 
-  describe "valid cases" do
+  alias Fsm.Tram
+
+  describe "initial cases" do
     test "test initial state" do
       Fsm.Tram.start_link("47a")
 
@@ -9,11 +11,13 @@ defmodule Fsm.TramTest do
 
       assert initial_state.status == :idle
       assert initial_state.tram_num == "47a"
-      assert initial_state.passengers == 0
       assert initial_state.doors_opened == false
+      assert initial_state.passengers == 0
     end
+  end
 
-    test "test start command" do
+  describe "from :idle state" do
+    test ":start command" do
       Fsm.Tram.start_link("47a")
       message = Fsm.Tram.send_command(:start)
 
@@ -22,82 +26,13 @@ defmodule Fsm.TramTest do
       state = Fsm.Tram.status()
 
       assert state.status == :moving
-      assert state.tram_num == "47a"
-      assert state.passengers == 0
-      assert state.doors_opened == false
-    end
-
-    test "command stop while moving" do
-      Fsm.Tram.start_link("47a")
-      Fsm.Tram.send_command(:start)
-
-      message = Fsm.Tram.send_command(:stop)
-
-      assert message == "tram 47a stopped"
-
-      state = Fsm.Tram.status()
-
-      assert state.status == :stopped
-      assert state.passengers == 0
-      assert state.doors_opened == true
-    end
-
-    test "change_passengers command" do
-      Fsm.Tram.start_link("47a")
-      Fsm.Tram.send_command(:start)
-      Fsm.Tram.send_command(:stop)
-      message = Fsm.Tram.send_command(:change_passengers)
-
-      assert message == "passengers changed"
-
-      state = Fsm.Tram.status()
-
-      assert state.status == :stopped
-      assert state.doors_opened == true
-    end
-
-    test "command :empty_tram" do
-      Fsm.Tram.start_link("47a")
-      Fsm.Tram.send_command(:start)
-      Fsm.Tram.send_command(:stop)
-      Fsm.Tram.send_command(:change_passengers)
-      Fsm.Tram.send_command(:start)
-      Fsm.Tram.send_command(:stop)
-
-      message = Fsm.Tram.send_command(:empty_tram)
-
-      assert message == "tram is empty"
-
-      state = Fsm.Tram.status()
-
-      assert state.status == :stopped
-      assert state.passengers == 0
-      assert state.doors_opened == true
-    end
-
-    test "move tram to depot" do
-      Fsm.Tram.start_link("47a")
-      Fsm.Tram.send_command(:start)
-      Fsm.Tram.send_command(:stop)
-      Fsm.Tram.send_command(:change_passengers)
-      Fsm.Tram.send_command(:start)
-      Fsm.Tram.send_command(:stop)
-      Fsm.Tram.send_command(:empty_tram)
-
-      message = Fsm.Tram.send_command(:at_depot)
-
-      assert message == "moving to depot"
-
-      state = Fsm.Tram.status()
-
-      assert state.status == :idle
       assert state.doors_opened == false
       assert state.passengers == 0
     end
   end
 
-  describe "invalid cases" do
-    test "command start while moving" do
+  describe "from :moving state" do
+    test ":start command" do
       Fsm.Tram.start_link("47a")
       Fsm.Tram.send_command(:start)
 
@@ -110,27 +45,26 @@ defmodule Fsm.TramTest do
       assert state.doors_opened == false
     end
 
-    test "command stop while stopped" do
+    test ":stop command" do
       Fsm.Tram.start_link("47a")
       Fsm.Tram.send_command(:start)
-      Fsm.Tram.send_command(:stop)
 
       message = Fsm.Tram.send_command(:stop)
 
-      assert message == "tram 47a already stopped"
+      assert message == "tram 47a stopped"
 
       state = Fsm.Tram.status()
 
       assert state.status == :stopped
-      assert state.passengers == 0
       assert state.doors_opened == true
+      assert state.passengers == 0
     end
 
-    test "try change passengers while moving" do
+    test ":change_passengers command" do
       Fsm.Tram.start_link("47a")
       Fsm.Tram.send_command(:start)
 
-      message = Fsm.Tram.send_command(:change_passengers)
+      message = Fsm.Tram.send_command({:change_passengers, Enum.random(1..Tram.max_passengers())})
 
       assert message == "can't change passengers: tram moving"
 
@@ -140,7 +74,7 @@ defmodule Fsm.TramTest do
       assert state.doors_opened == false
     end
 
-    test "try empty tram while moving" do
+    test ":empty_tram command" do
       Fsm.Tram.start_link("47a")
       Fsm.Tram.send_command(:start)
       Fsm.Tram.send_command(:stop)
@@ -157,35 +91,144 @@ defmodule Fsm.TramTest do
       assert state.doors_opened == false
     end
 
-    test "try move to depot while already in depot" do
+    test ":to_depot command" do
+      Fsm.Tram.start_link("47a")
+      Fsm.Tram.send_command(:start)
+
+      message = Fsm.Tram.send_command(:to_depot)
+
+      assert message == "can't move to depot: on route"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :moving
+    end
+  end
+
+  describe "from :stopped state" do
+    test ":stop command" do
+      Fsm.Tram.start_link("47a")
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+
+      message = Fsm.Tram.send_command(:stop)
+
+      assert message == "tram 47a already stopped"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :stopped
+      assert state.doors_opened == true
+      assert state.passengers == 0
+    end
+
+    test ":change_passengers command" do
+      Fsm.Tram.start_link("47a")
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+
+      passengers = Enum.random(1..Tram.max_passengers())
+
+      message = Fsm.Tram.send_command({:change_passengers, passengers})
+
+      assert message == "passengers changed"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :stopped
+      assert state.doors_opened == true
+      assert state.passengers == passengers
+    end
+
+    test ":empty_tram command" do
+      Fsm.Tram.start_link("47a")
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+      Fsm.Tram.send_command(:change_passengers)
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+
+      message = Fsm.Tram.send_command(:empty_tram)
+
+      assert message == "tram is empty"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :stopped
+      assert state.doors_opened == true
+      assert state.passengers == 0
+    end
+
+    test ":to_depot command without passengers" do
+      Fsm.Tram.start_link("47a")
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+      Fsm.Tram.send_command(:change_passengers)
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+      Fsm.Tram.send_command(:empty_tram)
+
+      message = Fsm.Tram.send_command(:to_depot)
+
+      assert message == "moving to depot and stop"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :idle
+      assert state.doors_opened == false
+      assert state.passengers == 0
+    end
+
+    test ":to_depot command with passengers" do
+      Fsm.Tram.start_link("47a")
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+      Fsm.Tram.send_command({:change_passengers, 5})
+      Fsm.Tram.send_command(:start)
+      Fsm.Tram.send_command(:stop)
+
+      message = Fsm.Tram.send_command(:to_depot)
+
+      assert message == "can't move to depot: tram is not empty"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :stopped
+      assert state.doors_opened == true
+      assert state.passengers > 0
+    end
+  end
+
+  describe "from :at_depot state" do
+    test ":to_depot command" do
       Fsm.Tram.start_link("47a")
 
-      message = Fsm.Tram.send_command(:at_depot)
+      message = Fsm.Tram.send_command(:to_depot)
 
       assert message == "already in depot"
 
       state = Fsm.Tram.status()
 
       assert state.status == :idle
-      assert state.passengers == 0
       assert state.doors_opened == false
+      assert state.passengers == 0
     end
 
-    test "try to change passengers while in depot" do
+    test ":change_passengers command" do
       Fsm.Tram.start_link("47a")
 
-      message = Fsm.Tram.send_command(:change_passengers)
+      message = Fsm.Tram.send_command({:change_passengers, 5})
 
       assert message == "can't change passengers: tram in depot"
 
       state = Fsm.Tram.status()
 
       assert state.status == :idle
-      assert state.passengers == 0
       assert state.doors_opened == false
+      assert state.passengers == 0
     end
 
-    test "try to stop while in depot" do
+    test ":stop command" do
       Fsm.Tram.start_link("47a")
 
       message = Fsm.Tram.send_command(:stop)
@@ -195,8 +238,22 @@ defmodule Fsm.TramTest do
       state = Fsm.Tram.status()
 
       assert state.status == :idle
-      assert state.passengers == 0
       assert state.doors_opened == false
+      assert state.passengers == 0
+    end
+  end
+
+  describe "invalid commands" do
+    test "from :idle send :invalid command" do
+      Fsm.Tram.start_link("47a")
+
+      message = Fsm.Tram.send_command(:invalid)
+
+      assert message == "command not allowed"
+
+      state = Fsm.Tram.status()
+
+      assert state.status == :idle
     end
   end
 end
