@@ -1,0 +1,11 @@
+<h1>
+  Hello, <%= @user %>!
+</h1>
+
+<%= if @users do %>
+  <%= for user <- @users do %>
+    <p1>
+      Hello, <%= user %>!
+    </p1>
+  <% end %>
+<% end %>
