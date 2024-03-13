@@ -21,8 +21,10 @@ defmodule FirstPhxAppWeb.PageControllerTest do
 
     conn = get(conn, ~p"/hello", users: users)
 
-    assert html_response(conn, 200) =~ "Hello, Yoda!"
-    assert html_response(conn, 200) =~ "Hello, Obi-Wan Kenobi!"
-    assert html_response(conn, 200) =~ "Hello, Anakin Skywalker!"
+    resp = html_response(conn, 200)
+
+    assert resp =~ "Hello, Yoda!"
+    assert resp =~ "Hello, Obi-Wan Kenobi!"
+    assert resp =~ "Hello, Anakin Skywalker!"
   end
 end
