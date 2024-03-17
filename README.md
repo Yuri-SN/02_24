@@ -7,4 +7,4 @@
 |    3     |                    |
 |    4     |        fsm         |
 |    5     |    first_phx_app   |
-|          |                    |
+|    6     |       store        |
