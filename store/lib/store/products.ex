@@ -5,9 +5,7 @@ defmodule Store.Products do
 
   import Ecto.Query, warn: false
 
-  alias Store.Repo
-
-  alias Store.Products.Product
+  alias Store.{Repo, Products.Product}
 
   @doc """
   Returns the list of products.
@@ -18,8 +16,13 @@ defmodule Store.Products do
       [%Product{}, ...]
 
   """
-  def list_products do
-    Repo.all(Product)
+  def list_products(limit \\ 500, offset \\ 0) do
+    Repo.all(
+      from t in Product,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+    )
   end
 
   @doc """

@@ -6,9 +6,7 @@ defmodule Store.Taggable do
   import Ecto.Query, warn: false
 
   alias Store.Repo
-
-  alias Store.Taggable.Tag
-  alias Store.Taggable.Tagging
+  alias Store.Taggable.{Tag, Tagging}
 
   @doc """
   Returns the list of tags.
@@ -19,8 +17,13 @@ defmodule Store.Taggable do
       [%Tag{}, ...]
 
   """
-  def list_tags do
-    Repo.all(Tag)
+  def list_tags(limit \\ 500, offset \\ 0) do
+    Repo.all(
+      from t in Tag,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+    )
   end
 
   def tag_product(product, %{tag: tag_attrs} = attrs) do
@@ -33,7 +36,7 @@ defmodule Store.Taggable do
     |> Repo.insert()
   end
 
-  defp create_or_find_tag(%{name: "" <> name} = attrs) do
+  defp create_or_find_tag(%{name: name} = attrs) when is_binary(name) do
     %Tag{}
     |> Tag.changeset(attrs)
     |> Repo.insert()
@@ -46,7 +49,8 @@ defmodule Store.Taggable do
   defp create_or_find_tag(_), do: nil
 
   def delete_tag_from_product(product, tag) do
-    Repo.get_by(Tagging, product_id: product.id, tag_id: tag.id)
+    Tagging
+    |> Repo.get_by(product_id: product.id, tag_id: tag.id)
     |> case do
       %Tagging{} = tagging -> Repo.delete(tagging)
       nil -> {:ok, %Tagging{}}
