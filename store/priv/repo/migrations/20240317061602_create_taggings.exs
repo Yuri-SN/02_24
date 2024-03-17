@@ -4,8 +4,10 @@ defmodule Store.Repo.Migrations.CreateTaggings do
   def change do
     create table(:taggings, primary_key: false) do
       add :id, :binary_id, primary_key: true
-      add :tag_id, references(:tags, on_delete: :delete_all, type: :binary_id)
-      add :product_id, references(:products, on_delete: :delete_all, type: :binary_id)
+      add :tag_id, references(:tags, on_delete: :delete_all, type: :binary_id), null: false
+
+      add :product_id, references(:products, on_delete: :delete_all, type: :binary_id),
+        null: false
 
       timestamps(type: :utc_datetime)
     end

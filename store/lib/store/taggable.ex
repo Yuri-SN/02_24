@@ -4,9 +4,11 @@ defmodule Store.Taggable do
   """
 
   import Ecto.Query, warn: false
-  alias Store.Repo
 
-  alias Store.Taggable.Product
+  alias Store.Repo
+  alias Store.Taggable.{Product, Tag, Tagging}
+
+  # Products
 
   @doc """
   Returns the list of products.
@@ -17,8 +19,13 @@ defmodule Store.Taggable do
       [%Product{}, ...]
 
   """
-  def list_products do
-    Repo.all(Product)
+  def list_products(limit \\ 50, offset \\ 0) do
+    Repo.all(
+      from p in Product,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+    )
   end
 
   @doc """
@@ -102,7 +109,7 @@ defmodule Store.Taggable do
     Product.changeset(product, attrs)
   end
 
-  alias Store.Taggable.Tag
+  # Tags
 
   @doc """
   Returns the list of tags.
@@ -113,8 +120,13 @@ defmodule Store.Taggable do
       [%Tag{}, ...]
 
   """
-  def list_tags do
-    Repo.all(Tag)
+  def list_tags(limit \\ 50, offset \\ 0) do
+    Repo.all(
+      from t in Tag,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+    )
   end
 
   @doc """
@@ -198,7 +210,7 @@ defmodule Store.Taggable do
     Tag.changeset(tag, attrs)
   end
 
-  alias Store.Taggable.Tagging
+  # Taggings
 
   @doc """
   Returns the list of taggings.
