@@ -17,5 +17,6 @@ defmodule Store.Taggable.Product do
     product
     |> cast(attrs, [:title])
     |> validate_required([:title])
+    |> cast_assoc(:taggings)
   end
 end

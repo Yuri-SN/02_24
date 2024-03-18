@@ -19,9 +19,20 @@ defmodule Store.Taggable do
     )
   end
 
+  def list_products_by_tag(%{name: name}, limit \\ 50, offset \\ 0) do
+    tag = get_tag_by_name(name)
+
+    Repo.all(
+      from p in Product,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+    )
+  end
+
   def get_product!(id), do: Repo.get!(Product, id)
 
-  def get_product_with_tags(id), do: Repo.get(Product, id) |> Repo.preload(:tags)
+  def get_product_by_id_with_tags(id), do: Repo.get(Product, id) |> Repo.preload(:tags)
 
   def create_product(attrs \\ %{}) do
     {:ok, product} =
@@ -57,7 +68,7 @@ defmodule Store.Taggable do
     )
   end
 
-  def get_tag_by_name!(name), do: Repo.get_by!(Tag, name: name)
+  def get_tag_by_name(name), do: Repo.get_by(Tag, name: name)
 
   def create_tag(attrs \\ %{}) do
     %Tag{}
@@ -76,7 +87,7 @@ defmodule Store.Taggable do
   end
 
   def delete_tag_by_name(name) do
-    get_tag_by_name!(name)
+    get_tag_by_name(name)
     |> Repo.delete()
   end
 
@@ -85,15 +96,6 @@ defmodule Store.Taggable do
   end
 
   # Taggings
-
-  def list_taggings(limit \\ 50, offset \\ 0) do
-    Repo.all(
-      from t in Tagging,
-        order_by: [desc: :inserted_at],
-        limit: ^limit,
-        offset: ^offset
-    )
-  end
 
   def create_tagging(attrs \\ %{}) do
     %Tagging{}
@@ -112,11 +114,11 @@ defmodule Store.Taggable do
       })
     end)
 
-    get_product_with_tags(product.id)
+    get_product_by_id_with_tags(product.id)
   end
 
   def update_product_tags(product, _tags_params) do
-    get_product_with_tags(product.id)
+    get_product_by_id_with_tags(product.id)
   end
 
   def create_or_find_tag(%{name: name} = attrs) when is_binary(name) do

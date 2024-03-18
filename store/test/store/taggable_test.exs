@@ -3,6 +3,30 @@ defmodule Store.TaggableTest do
 
   alias Store.Taggable
 
+  describe "get Products by tag" do
+    test "few Products" do
+      first_product_params = %{
+        title: "First Product",
+        tags: [%{name: "Mega Tag"}]
+      }
+
+      second_product_params = %{
+        title: "Second Product",
+        tags: [%{name: "Mega Tag"}]
+      }
+
+      first_product = Taggable.create_product(first_product_params)
+      second_product = Taggable.create_product(second_product_params)
+
+      tagged_products = Taggable.list_products_by_tag(%{name: "Mega Tag"})
+
+      assert length(tagged_products) == 2
+    end
+
+    test "nonexistent tag name" do
+    end
+  end
+
   describe "add Product with tags" do
     test "all tags are new" do
       params = %{
@@ -126,7 +150,7 @@ defmodule Store.TaggableTest do
 
       {:ok, _tag} = Taggable.delete_tag_by_name("Second Tag")
 
-      product = Taggable.get_product_with_tags(new_product.id)
+      product = Taggable.get_product_by_id_with_tags(new_product.id)
 
       first_tag =
         product.tags
