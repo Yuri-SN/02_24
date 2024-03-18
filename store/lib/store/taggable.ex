@@ -94,6 +94,16 @@ defmodule Store.Taggable do
     |> Repo.delete()
   end
 
+  def delete_tags(tags) when is_list(tags) do
+    names =
+      tags
+      |> Enum.map(fn t -> t.name end)
+
+    Tag
+    |> where([t], t.name in ^names)
+    |> Repo.delete_all()
+  end
+
   def change_tag(%Tag{} = tag, attrs \\ %{}) do
     Tag.changeset(tag, attrs)
   end

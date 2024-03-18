@@ -176,5 +176,32 @@ defmodule Store.TaggableTest do
       assert length(product.tags) == 1
       assert first_tag == "First Tag"
     end
+
+    test "delete few tags" do
+      first_tag_params = %{name: "First Tag"}
+      second_tag_params = %{name: "Second Tag"}
+
+      first_product =
+        Taggable.create_product(%{
+          title: "First Test Product",
+          tags: [first_tag_params, second_tag_params]
+        })
+
+      second_product =
+        Taggable.create_product(%{
+          title: "Second Test Product",
+          tags: [second_tag_params]
+        })
+
+      {deleted_rows, _} = Taggable.delete_tags([first_tag_params, second_tag_params])
+
+      assert deleted_rows == 2
+
+      first_updated_product = Taggable.get_product_by_id_with_tags(first_product.id)
+      second_updated_product = Taggable.get_product_by_id_with_tags(second_product.id)
+
+      assert length(first_updated_product.tags) == 0
+      assert length(second_updated_product.tags) == 0
+    end
   end
 end
