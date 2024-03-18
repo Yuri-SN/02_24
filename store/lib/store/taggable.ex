@@ -19,17 +19,6 @@ defmodule Store.Taggable do
     )
   end
 
-  def list_products_by_tag(%{name: name}, limit \\ 50, offset \\ 0) do
-    tag = get_tag_by_name(name)
-
-    Repo.all(
-      from p in Product,
-        order_by: [desc: :inserted_at],
-        limit: ^limit,
-        offset: ^offset
-    )
-  end
-
   def get_product!(id), do: Repo.get!(Product, id)
 
   def get_product_by_id_with_tags(id), do: Repo.get(Product, id) |> Repo.preload(:tags)
@@ -69,6 +58,20 @@ defmodule Store.Taggable do
   end
 
   def get_tag_by_name(name), do: Repo.get_by(Tag, name: name)
+
+  def get_tag_by_name_with_products(%{name: name}, limit \\ 50, offset \\ 0) do
+    products_query =
+      from p in Product,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+
+    Repo.get_by(Tag, name: name)
+    |> Repo.preload(products: products_query)
+
+    # preload: [products: products_query]
+    # )
+  end
 
   def create_tag(attrs \\ %{}) do
     %Tag{}
