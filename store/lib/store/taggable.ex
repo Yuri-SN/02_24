@@ -44,6 +44,8 @@ defmodule Store.Taggable do
   """
   def get_product!(id), do: Repo.get!(Product, id)
 
+  def get_product_with_tags(id), do: Repo.get(Product, id) |> Repo.preload(:tags)
+
   @doc """
   Creates a product.
 
@@ -57,9 +59,12 @@ defmodule Store.Taggable do
 
   """
   def create_product(attrs \\ %{}) do
-    %Product{}
-    |> Product.changeset(attrs)
-    |> Repo.insert()
+    {:ok, product} =
+      %Product{}
+      |> Product.changeset(attrs)
+      |> Repo.insert()
+
+    update_product_tags(product, attrs[:tags])
   end
 
   @doc """
@@ -145,6 +150,8 @@ defmodule Store.Taggable do
   """
   def get_tag!(id), do: Repo.get!(Tag, id)
 
+  def get_tag_by_name!(name), do: Repo.get_by!(Tag, name: name)
+
   @doc """
   Creates a tag.
 
@@ -197,6 +204,11 @@ defmodule Store.Taggable do
     Repo.delete(tag)
   end
 
+  def delete_tag_by_name(name) do
+    get_tag_by_name!(name)
+    |> Repo.delete()
+  end
+
   @doc """
   Returns an `%Ecto.Changeset{}` for tracking tag changes.
 
@@ -221,8 +233,13 @@ defmodule Store.Taggable do
       [%Tagging{}, ...]
 
   """
-  def list_taggings do
-    Repo.all(Tagging)
+  def list_taggings(limit \\ 50, offset \\ 0) do
+    Repo.all(
+      from t in Tagging,
+        order_by: [desc: :inserted_at],
+        limit: ^limit,
+        offset: ^offset
+    )
   end
 
   @doc """
@@ -304,5 +321,44 @@ defmodule Store.Taggable do
   """
   def change_tagging(%Tagging{} = tagging, attrs \\ %{}) do
     Tagging.changeset(tagging, attrs)
+  end
+
+  def update_product_tags(product, tags_params) when is_list(tags_params) do
+    tags_params
+    |> Enum.map(fn tag_params ->
+      tag = create_or_find_tag(tag_params)
+
+      create_tagging(%{
+        product_id: product.id,
+        tag_id: tag.id
+      })
+    end)
+
+    get_product_with_tags(product.id)
+  end
+
+  def update_product_tags(product, _tags_params) do
+    get_product_with_tags(product.id)
+  end
+
+  def create_or_find_tag(%{name: name} = attrs) when is_binary(name) do
+    %Tag{}
+    |> Tag.changeset(attrs)
+    |> Repo.insert()
+    |> case do
+      {:ok, tag} -> tag
+      _ -> Repo.get_by(Tag, name: name)
+    end
+  end
+
+  def create_or_find_tag(_), do: nil
+
+  def product_tags_names(tags) when is_list(tags) do
+    tags
+    |> Enum.map(fn t -> t.name end)
+  end
+
+  def product_tags_names(_tags) do
+    []
   end
 end

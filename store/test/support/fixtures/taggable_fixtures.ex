@@ -38,9 +38,7 @@ defmodule Store.TaggableFixtures do
   def tagging_fixture(attrs \\ %{}) do
     {:ok, tagging} =
       attrs
-      |> Enum.into(%{
-
-      })
+      |> Enum.into(%{})
       |> Store.Taggable.create_tagging()
 
     tagging

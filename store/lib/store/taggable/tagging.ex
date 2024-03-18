@@ -13,7 +13,7 @@ defmodule Store.Taggable.Tagging do
   @doc false
   def changeset(tagging, attrs) do
     tagging
-    |> cast(attrs, [])
+    |> cast(attrs, [:tag_id, :product_id])
     |> validate_required([:tag_id, :product_id])
     |> unique_constraint(:name, name: :taggings_tag_id_product_id_index)
     |> cast_assoc(:tag)
