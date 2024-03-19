@@ -6,9 +6,10 @@ import Config
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
 config :store, Store.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "admin",
+  password: "adminPass",
   hostname: "localhost",
+  port: 5434,
   database: "store_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
@@ -17,7 +18,7 @@ config :store, Store.Repo,
 # you can enable the server option below.
 config :store, StoreWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
-  secret_key_base: "SxLWAl2ce3Ez+EurSyDsGSelATHIHt6G5tmmpYj2fFtUaSkgeD6lS3KlCiwYbqle",
+  secret_key_base: "hQQN7NJOPrFZ6yXVpVJZDl+Ec5jpo/pwVAxrylrcHaKvE8Rj8s/11z+mMFufViYy",
   server: false
 
 # In test we don't send emails.

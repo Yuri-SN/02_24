@@ -2,9 +2,10 @@ import Config
 
 # Configure your database
 config :store, Store.Repo,
-  username: "postgres",
-  password: "postgres",
+  username: "admin",
+  password: "adminPass",
   hostname: "localhost",
+  port: 5434,
   database: "store_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
@@ -23,7 +24,7 @@ config :store, StoreWeb.Endpoint,
   check_origin: false,
   code_reloader: true,
   debug_errors: true,
-  secret_key_base: "NXhDAidsHDud77N1sjj4/dswIcCYsId+7yVXncYixU9gvcExqupBTm/ZZ5pN6iVY",
+  secret_key_base: "PuAjOgLYM00DsWjXKYUP70pvogBLD8qqPIOJ5jtly3X2x2Iy77P5y6CcJk6qQduV",
   watchers: [
     esbuild: {Esbuild, :install_and_run, [:store, ~w(--sourcemap=inline --watch)]},
     tailwind: {Tailwind, :install_and_run, [:store, ~w(--watch)]}
