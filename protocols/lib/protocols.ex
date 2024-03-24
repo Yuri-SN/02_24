@@ -3,16 +3,12 @@ defmodule Protocols do
   Documentation for `Protocols`.
   """
 
-  @doc """
-  Hello world.
+  @behaviour GenLister
 
-  ## Examples
+  @impl GenLister
+  def convert_to_list(term) do
+    list = Lister.to_list(term)
 
-      iex> Protocols.hello()
-      :world
-
-  """
-  def hello do
-    :world
+    {:ok, list}
   end
 end
