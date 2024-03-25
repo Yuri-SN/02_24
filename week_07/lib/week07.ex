@@ -1,6 +1,6 @@
-defmodule Protocols do
+defmodule Week07 do
   @moduledoc """
-  Documentation for `Protocols`.
+  Documentation for `Week07`.
   """
 
   @doc """
@@ -8,7 +8,7 @@ defmodule Protocols do
 
   ## Examples
 
-      iex> Protocols.hello()
+      iex> Week07.hello()
       :world
 
   """

@@ -8,4 +8,4 @@
 |    4     |        fsm         |
 |    5     |    first_phx_app   |
 |    6     |       store        |
-|    7     |     protocols      |
+|    7     |      week_07       |
