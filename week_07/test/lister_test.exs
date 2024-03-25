@@ -8,8 +8,10 @@ defmodule ListerTest do
   test "for BitString" do
     assert Lister.to_list("s_12") == ["s", "_", "1", "2"]
     assert Lister.to_list("A") == ["A"]
-    assert Lister.to_list(<<0::1>>) == [0]
+    assert Lister.to_list(<<0::1>>, bits: 1) == [0]
     assert Lister.to_list(<<0::1, 1::1, 0::1>>) == [0, 1, 0]
+    assert Lister.to_list(<<0::1, 1::1, 0::1>>, bits: 3) == [2]
+    assert Lister.to_list(<<0::1, 1::1, 0::1>>, bits: 4) == []
   end
 
   test "for Float" do
