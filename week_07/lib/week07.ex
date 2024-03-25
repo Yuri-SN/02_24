@@ -3,16 +3,10 @@ defmodule Week07 do
   Documentation for `Week07`.
   """
 
-  @doc """
-  Hello world.
+  @behaviour Converter
 
-  ## Examples
-
-      iex> Week07.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @impl Converter
+  def to_list(term) do
+    Lister.to_list(term)
   end
 end
